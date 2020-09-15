@@ -95,14 +95,14 @@ public class DatabaseGetData
 				}
 			}
 
-			if (conn != null) {
+			/*if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
 					Logger logger = Logger.getAnonymousLogger();
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
-			}
+			}*/
 		}
 		return cc;
 	}
@@ -146,14 +146,14 @@ public class DatabaseGetData
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
 			}
-			if (conn != null) {
+			/*if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
 					Logger logger = Logger.getAnonymousLogger();
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
-			}
+			}*/
 		}
 		System.out.println("Kee from project " + projectName+ " retrieved from database successfully!");
 	}
@@ -198,13 +198,13 @@ public class DatabaseGetData
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
 			}
-			if (conn != null) {
+			/*if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
 					Logger logger = Logger.getAnonymousLogger();
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);				}
-			}
+			}*/
 		}
 		System.out.println("Classes from project " + projectName + " retrieved from database successfully!");		
 	}
@@ -249,14 +249,14 @@ public class DatabaseGetData
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
 			}
-			if (conn != null) {
+			/*if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
 					Logger logger = Logger.getAnonymousLogger();
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
-			}
+			}*/
 		}
 		System.out.println("Directories from project " + projectName + " retrieved from database successfully!");	
 	}
@@ -303,14 +303,14 @@ public class DatabaseGetData
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
 			}
-			if (conn != null) {
+			/*if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
 					Logger logger = Logger.getAnonymousLogger();
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
-			}
+			}*/
 		}
 		System.out.println("Projects retrieved from database successfully!");
 		processingForProjectsAndVersions(keeDirectoryID);	
@@ -396,14 +396,14 @@ public class DatabaseGetData
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
 			}
-			if (conn != null) {
+			/*if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
 					Logger logger = Logger.getAnonymousLogger();
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
-			}
+			}*/
 		}
 		return k;
 	}
@@ -450,14 +450,14 @@ public class DatabaseGetData
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
 			}
-			if (conn != null) {
+			/*if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
 					Logger logger = Logger.getAnonymousLogger();
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
-			}
+			}*/
 		}
 		return loc;
 	}
@@ -504,14 +504,14 @@ public class DatabaseGetData
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
 			}
-			if (conn != null) {
+			/*if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
 					Logger logger = Logger.getAnonymousLogger();
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
-			}
+			}*/
 		}
 		return loc;
 	}
@@ -557,14 +557,14 @@ public class DatabaseGetData
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
 			}
-			if (conn != null) {
+			/*if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
 					Logger logger = Logger.getAnonymousLogger();
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
-			}
+			}*/
 		}
 		return k;
 	}
@@ -611,14 +611,14 @@ public class DatabaseGetData
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
 			}
-			if (conn != null) {
+			/*if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
 					Logger logger = Logger.getAnonymousLogger();
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
-			}
+			}*/
 		}
 		return interest;
 	}
@@ -665,14 +665,14 @@ public class DatabaseGetData
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
 			}
-			if (conn != null) {
+			/*if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
 					Logger logger = Logger.getAnonymousLogger();
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
-			}
+			}*/
 		}
 		return interest;
 	}

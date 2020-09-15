@@ -4,19 +4,20 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class RippleEffectChangeProneness 
 {
+	private static String interest_probability = "externalTools/interest_probabilityNoGUI.jar";
+
 	public void ExtractJar(String jarName, int version, String path, String projectName)
 			throws IOException, InterruptedException {
 
-		// Run On PC command
-		//path = path + File.separator + projectName + File.separator + jarName + version + ".jar";
-
 		String javaRunningDirectory = System.getProperty("user.dir");
 		String project = jarName + version;
-		
-		// Run On Docker in Server Command
+
+		// Run On Docker, eclipse ide and as jar file
 		//path = javaRunningDirectory + File.separator + projectName + File.separator + jarName + version + ".jar";
 		path = path + File.separator + projectName + File.separator + jarName + version + ".jar";
 
@@ -65,9 +66,11 @@ public class RippleEffectChangeProneness
 				}
 
 			} catch (IOException e) {
-				e.printStackTrace();
+				Logger logger = Logger.getAnonymousLogger();
+				logger.log(Level.SEVERE, "Exception was thrown: ", e);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				Logger logger = Logger.getAnonymousLogger();
+				logger.log(Level.SEVERE, "Exception was thrown: ", e);
 			}
 
 		} else {
@@ -108,16 +111,9 @@ public class RippleEffectChangeProneness
 		System.out.println("------ Process REM started -----");
 
 		ProcessBuilder processB = new ProcessBuilder();
-		// ******** execution from ide ************
-		processB.command("java", "-jar", "externalTools/interest_probability.jar",
+		// Server, jar and eclipse ide execution
+		processB.command("java", "-jar", interest_probability,
 				System.getProperty("user.dir") + "/" + project);
-		
-		// ******** execution from jar ************
-		//System.out.println("^^^^^^^^REM execution folder " + System.getProperty("user.dir") + "/" + project);
-		//processB.command("java", "-jar", "interest_probability.jar",
-			//System.getProperty("user.dir") + "/" + project);
-		// System.out.println("^^^^^^^ : " + System.getProperty("user.dir") + project);
-		//processB.directory(file);
 
 		try {
 
@@ -139,49 +135,18 @@ public class RippleEffectChangeProneness
 			}
 
 		} catch (IOException e) {
-			e.printStackTrace();
+			Logger logger = Logger.getAnonymousLogger();
+			logger.log(Level.SEVERE, "Exception was thrown: ", e);
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			Logger logger = Logger.getAnonymousLogger();
+			logger.log(Level.SEVERE, "Exception was thrown: ", e);
 		}
-
-		//int exitval;
-		//System.out.println(
-		//		"java -jar externalTools/interest_probability.jar " + System.getProperty("user.dir") + "/" + project);
-
-		/*ProcessBuilder processBuilder = new ProcessBuilder();
-		processBuilder.command("java", " -jar", " externalTools/interest_probability.jar",
-				System.getProperty("user.dir") + "/" + project);
-		Process process = processBuilder.start();
-		int exitCode = process.waitFor();
-		System.out.println("\nExited with error code : " + exitCode);*/
-
-		/*
-		 * Process remProcess = Runtime.getRuntime()
-		 * .exec("java -jar externalTools/interest_probability.jar " +
-		 * System.getProperty("user.dir") + "/" + project); //remProcess.waitFor(); //
-		 * If exit value is 0 then execution was successful
-		 * 
-		 * if(!remProcess.waitFor(1, TimeUnit.MINUTES)) { //timeout - kill the process.
-		 * return; // consider using destroyForcibly instead } if(!remProcess.waitFor(1,
-		 * TimeUnit.MINUTES)) { //timeout - kill the process. remProcess.destroy(); //
-		 * consider using destroyForcibly instead }
-		 * 
-		 * System.out.println("----- End of execution REM -----"); exitval =
-		 * remProcess.exitValue();
-		 * 
-		 * if (exitval != 0) { System.out.
-		 * println("An error occured during execution.The project didn't analyzed."); }
-		 * else { System.out.println("REM Tool executed successfully!"); }
-		 * 
-		 * remProcess.destroy(); if (remProcess.isAlive()) {
-		 * remProcess.destroyForcibly(); }
-		 */
 
 	}
 
 	public static void delete(File file) throws IOException {
 		boolean result = true;
-		
+
 		if (file.isDirectory()) 
 		{
 			// If directory is empty, then delete it
@@ -194,7 +159,7 @@ public class RippleEffectChangeProneness
 				}
 				else
 					System.out.println("Error with the deletion of file");
-				
+
 			} 
 			else 
 			{
@@ -214,7 +179,7 @@ public class RippleEffectChangeProneness
 				if (file.list().length == 0) 
 				{
 					result = file.delete();
-					
+
 					if (result)
 					{
 						//System.out.println("File is deleted : " + file.getAbsolutePath());
@@ -229,7 +194,7 @@ public class RippleEffectChangeProneness
 		{
 			// if file, then delete it
 			result = file.delete();
-			
+
 			if (result)
 			{
 				//System.out.println("File is deleted : " + file.getAbsolutePath());

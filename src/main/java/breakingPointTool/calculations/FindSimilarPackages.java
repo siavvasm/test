@@ -61,7 +61,7 @@ public class FindSimilarPackages
         double similarity = 0;
         if (metric1 != 0 && metric2 != 0) 
         {
-            similarity = 100 - (Math.abs(metric1 - metric2) / (double) Math.max(metric1, metric2) * 100);
+            similarity = 100 - (Math.abs(metric1 - metric2) / Math.max(metric1, metric2) * 100);
         }
         return similarity;
     }

@@ -3,6 +3,8 @@ package main.java.breakingPointTool.connection;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class SonarDatabaseConnection 
 {
@@ -41,5 +43,18 @@ public class SonarDatabaseConnection
 		}
 
 		return connection;
+	}
+	
+	public static void closeConnection() 
+	{
+		if (connection != null) 
+		{
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				Logger logger = Logger.getAnonymousLogger();
+				logger.log(Level.SEVERE, "Exception was thrown: ", e);
+			}
+		}
 	}
 }

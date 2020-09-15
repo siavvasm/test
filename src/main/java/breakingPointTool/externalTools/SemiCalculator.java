@@ -5,12 +5,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class SemiCalculator 
 {
 	private final String semi = "externalTools/metrics_calculator_noOop.jar";
-	//private final String semi = "metrics_calculator_noOop.jar";
-
 
 	public void executeSemiCalculator(String language, int version, String path, String projectName, String credentials) throws IOException, InterruptedException
 	{
@@ -43,16 +43,6 @@ public class SemiCalculator
 		
 		if(f.exists()) 
 		{ 
-			// Run On Docker in Server Command
-			//String execution = "java -jar " + semi + " " + language + " " + projectName + " " + version + 
-					//" " + path + " " + credentials;
-
-			// if you execute from eclipse
-			//String execution = "java -jar externalTools/metrics_calculator.jar " + System.getProperty("user.dir") + "/jars/" +jarName + version + ".jar" + " output" + version + ".csv";
-			//System.out.println(execution);
-			//Process metricsAnalysisProcess = Runtime.getRuntime()
-					//.exec("java -jar externalTools/metrics_calculator.jar " + System.getProperty("user.dir") + "/jars/" +jarName + version + ".jar" + " output" + version + ".csv");
-			
 			ArrayList<String> command = new ArrayList<String>();
 			command.add("java");
 			command.add("-jar");
@@ -87,9 +77,11 @@ public class SemiCalculator
 				}
 
 			} catch (IOException e) {
-				e.printStackTrace();
+				Logger logger = Logger.getAnonymousLogger();
+				logger.log(Level.SEVERE, "Exception was thrown: ", e);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				Logger logger = Logger.getAnonymousLogger();
+				logger.log(Level.SEVERE, "Exception was thrown: ", e);
 			}
 		}
 		else

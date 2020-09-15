@@ -12,15 +12,23 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
+import org.eclipse.jgit.api.errors.CheckoutConflictException;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.InvalidRefNameException;
+import org.eclipse.jgit.api.errors.RefAlreadyExistsException;
+import org.eclipse.jgit.api.errors.RefNotFoundException;
 import org.json.JSONException;
 import org.xml.sax.SAXException;
+
+import main.java.breakingPointTool.GitClone.GitCloneProject;
 import main.java.breakingPointTool.api.ApiCall;
 import main.java.breakingPointTool.artifact.ProjectArtifact;
 import main.java.breakingPointTool.calculations.AverageLocCalculation;
@@ -36,19 +44,19 @@ import main.java.breakingPointTool.connection.SonarDatabaseConnection;
 import main.java.breakingPointTool.database.DatabaseGetData;
 import main.java.breakingPointTool.database.DatabaseSaveData;
 import main.java.breakingPointTool.database.GetAnalysisDataJava;
+import main.java.breakingPointTool.database.TablesCreation;
 import main.java.breakingPointTool.externalTools.MetricsCalculator;
 import main.java.breakingPointTool.externalTools.RippleEffectChangeProneness;
 import main.java.breakingPointTool.versions.Versions;
-
 
 /* This tool is called Breaking Point Tool and calculates quality metrics for Java, C++ and C
  * such as maintainability metrics and technical debt metrics such as principal, interest and breaking point.
  * 
  * It uses some other support tools.
  * 1) SonarQube (needs to be installed)
- * 2) Metrics Calculator for Java metrics (jar)
- * 3) Metrics Calculator for C (jar)
- * 4) Metrics Calculator for C++ (jar)
+ * 2) Metrics Calculator for OOP metrics (jar)
+ * 3) Metrics Calculator for NoOOP metrics (jar)
+ * 4) Interest Probability for OOP (jar)
  * At the end, writes all the calculated metrics in a database.
  * 
  * The analysis occurs in class, package and project level. 
@@ -56,21 +64,22 @@ import main.java.breakingPointTool.versions.Versions;
  * Prerequisites:
  * 1) A number of software versions
  * 2) A jar file for every software version for java code
- * 3) Specific structure of code - project -> package -> class (src/main/java) for java code
+ * 3) Specific structure of code: project -> package -> class/file
  * 4) Project name does not allow spaces
- * 5) For C path must be ""
+ * 5) At least 2 classes/files per project
  */
 
 public class BreakingPointTool 
 {
 	private static Scanner keyboard;
 
-	public static void main(String [ ] args) throws IOException, InterruptedException, NumberFormatException, SQLException, JSONException, SAXException, ParserConfigurationException, InstantiationException, IllegalAccessException
+	public static void main(String [ ] args) throws IOException, InterruptedException, NumberFormatException, SQLException, JSONException, SAXException, ParserConfigurationException, InstantiationException, IllegalAccessException, RefAlreadyExistsException, RefNotFoundException, InvalidRefNameException, CheckoutConflictException, GitAPIException
 	{	
 		// Passing parameters through stream 
 		String projectName = null, jarName = null, language = null;
 		int versionsNum = 0;
 		int typeAnalysis = 0;
+		String gitUsername = null, gitPassword = null, gitUrl = null;
 
 		ArrayList <String> artifactLongNamesPackage = new ArrayList<>();
 
@@ -90,12 +99,14 @@ public class BreakingPointTool
 				jarName = projectName;
 				language = args[1];
 				versionsNum = Integer.parseInt(args[2]);
-				//path = args[3];
 				typeAnalysis = Integer.parseInt(args[3]);
+				gitUrl = args[4];
+				gitUsername = args[5];
+				gitPassword = args[6];
 			}
 			catch (ArrayIndexOutOfBoundsException e){
-				System.out.println("Error: You should pass 6 parameters! 1) Project Name 2) JarName 3) Language 4) Num of Versions "
-						+ "5) Path to the actuall java code");
+				System.out.println("Error: You should pass 7 parameters! \n 1) Project Name \n 2) Language \n 3) Num of Versions "
+						+ "\n4) Type of analysis \n 5) Git URL \n 6) Git Username \n  7) Git Password");
 			}
 		}
 		else
@@ -115,7 +126,15 @@ public class BreakingPointTool
 			//System.out.println("Type path of main project for example: src/main/java/ "); 
 			//path = keyboard.nextLine();	
 			System.out.println("Type 1 for new analysis or 2 for a new version analysis to existed project"); 
-			typeAnalysis = keyboard.nextInt();		
+			typeAnalysis = keyboard.nextInt();
+			
+			System.out.println("Type the Git repository URL:");
+			keyboard.nextLine(); // Consume newline left-over
+			gitUrl = keyboard.nextLine();
+			System.out.println("Type the Git Account Username:");
+			gitUsername = keyboard.nextLine();
+			System.out.println("Type the Git Account Password:");
+			gitPassword = keyboard.nextLine();
 		}
 
 		// NEW DATA STRUCTURES
@@ -141,6 +160,8 @@ public class BreakingPointTool
 		java.net.URL jarLocationUrl = BreakingPointTool.class.getProtectionDomain().getCodeSource().getLocation();
 		String jarLocation = new File(jarLocationUrl.toString()).getParent();
 		jarLocation = jarLocation.replace("file:", "");
+
+		System.out.println("Location of config file: " + jarLocation);
 
 		// for eclipse execution
 		int t = jarLocation.lastIndexOf("/");
@@ -253,7 +274,41 @@ public class BreakingPointTool
 			// Execute SonarQube
 			//sonarQube(exec,projectName, versionsNum, projectPath, language, serverUrl, usernameSQConnection, passwordSQConnection, typeAnalysis); 
 			// Create database tables
-			createDatabaseTables();
+			TablesCreation tables = new TablesCreation();
+			tables.createDatabaseTables();
+			
+			// If the project has records on DB delete them
+			if (typeAnalysis == 1) 
+				DeleteFromDBAlreadyAnalysedProject(projectName, language);
+			else
+				DeleteFromDBAlreadyAnalysedVersion(projectName,language, versionsNum-1);
+			
+			// Clone code from Git
+			// TODO delete it after fix
+			if (projectName.equals("Neurasmus"))
+			{
+				String shasPath = jarLocation + "/SHAsOfVersions.txt";
+				ArrayList<String> shas = new ArrayList<String>();
+				
+				if (new File(shasPath).exists()) 
+				{ 
+					br = new BufferedReader(new FileReader(shasPath));
+
+					while ((line = br.readLine()) != null)
+					{ 
+						shas.add(line);
+					}
+				}
+				
+				GitCloneProject git = new GitCloneProject();
+				System.out.println(gitUsername);
+				System.out.println(gitPassword);
+				System.out.println(gitUrl);
+				git.cloneCommits(gitUsername, gitPassword, shas, gitUrl, projectName, versionsNum);
+				
+				projectPath = git.getProjectPath();
+				projectPath = projectPath.replace(projectName, "");
+			}
 		}
 
 
@@ -263,13 +318,13 @@ public class BreakingPointTool
 			DatabaseGetData dbCall = new DatabaseGetData(projectName);	
 
 			if (typeAnalysis == 1) {
-				
+
 				DatabaseSaveData dbSave = new DatabaseSaveData();
 				for (int i = 0; i < versionsNum; i ++)
 				{	
 					dbSave.saveTimestamp(projectName, i);
 				}
-				
+
 				for (int i = 0; i < versionsNum; i ++)
 				{
 					// Ripple Effect and Change Proneness Measure Execution
@@ -298,14 +353,6 @@ public class BreakingPointTool
 					metricsFromSonarPackageLevel.getTDFromApiSonar(dbCall.getPackagesId());
 					metricsFromSonarPackageLevel.getMetricCommentsDensityFromApi(dbCall.getPackagesId());
 
-					/*
-					 * for (String pc : dbCall.getPackagesId()) { if (pc.contains(path)) { String[]
-					 * tempPackage = pc.split(path);
-					 * 
-					 * if (tempPackage.length == 1) continue;
-					 * 
-					 * artifactLongNamesPackage.add(tempPackage[1]); } }
-					 */
 					// Set metrics from metrics calculator at class and package level
 					AverageLocCalculation calcAverageAllLevels = new AverageLocCalculation();
 					calcAverageAllLevels.setMetricsToClassLevel(projectName, i);
@@ -313,7 +360,6 @@ public class BreakingPointTool
 
 					v.setPackageInProject(calcAverageAllLevels.getObjectsPackageMetrics());
 					//artifactLongNamesPackage.clear();
-
 
 					for (int j = 0; j < v.getPackages().size(); j++)
 					{
@@ -390,7 +436,7 @@ public class BreakingPointTool
 
 					projectArtifacts.setVersion(v);
 					dbCall.clearData();
-					
+
 
 				} // End of FOR of versions
 
@@ -422,16 +468,16 @@ public class BreakingPointTool
 						OptimalArtifact optimalPackage = new OptimalArtifact();
 						optimalPackage.calculateOptimalPackage(similarPck, i);
 					} 
-					
+
 					dbSave.deleteTimestamp(projectName, i);
 				}
 			}
 			else if (typeAnalysis == 2)
 			{
-				
+
 				DatabaseSaveData dbSave = new DatabaseSaveData();
 				dbSave.saveTimestamp(projectName, versionsNum - 1);
-				
+
 				// Get metrics from Database from previous version
 				GetAnalysisDataJava classMetrics = new GetAnalysisDataJava();
 				classMetrics.getAnalysisDataBPTJava(projectName, "FIL", Integer.toString(versionsNum - 2));
@@ -465,17 +511,6 @@ public class BreakingPointTool
 				metricsFromSonarPackageLevel.getTDFromApiSonar(dbCall.getPackagesId());
 				metricsFromSonarPackageLevel.getMetricCommentsDensityFromApi(dbCall.getPackagesId());
 
-				/*
-				 * for (String pc : dbCall.getPackagesId()) { if (pc.contains(path)) { String[]
-				 * tempPackage = pc.split(path);
-				 * 
-				 * if (tempPackage.length == 1) continue;
-				 * 
-				 * artifactLongNamesPackage.add(tempPackage[1]); }
-				 * 
-				 * }
-				 */
-
 				// Set metrics from metrics calculator at class and package level
 				AverageLocCalculation calcAverageAllLevels = new AverageLocCalculation();
 				// Save Metrics Calculator Class Metrics
@@ -483,14 +518,11 @@ public class BreakingPointTool
 				// Save Metrics Calculator Package Metrics
 				calcAverageAllLevels.setClassToPackageLevel(dbCall.getPackagesId(),projectName, versionsNum-1);
 
-				// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! maybe DELETE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 				Versions v = new Versions();
 				v.setProjectName(projectName);
 				v.setVersionId(versionsNum-1);
 
-
 				v.setPackageInProject(calcAverageAllLevels.getObjectsPackageMetrics());
-				//artifactLongNamesPackage.clear();
 
 				for (int j = 0; j < v.getPackages().size(); j++)
 				{
@@ -574,7 +606,6 @@ public class BreakingPointTool
 				calcLOC.calculateLOCClassLevelNewVersion(classMetrics.getClassMetricsMap(), v.getPackages(), versionsNum -1);
 				calcLOC.calculateLOCCPackageLevelNewVersion(packageMetrics.getPackageMetricsMap(), v.getPackages(), versionsNum -1);
 
-
 				// Find similar classes
 				FindSimilarArtifacts similarArtifacts = new FindSimilarArtifacts();
 				similarCl = similarArtifacts.calculateSimilarityForClasses(projectArtifacts, versionsNum-1, typeAnalysis);
@@ -588,7 +619,7 @@ public class BreakingPointTool
 
 				//OptimalArtifact optimalPackage = new OptimalArtifact();
 				//optimalPackage.calculateOptimalPackage(similarPck, versionsNum-1);
-				
+
 				if (similarPckC.size() == 1)
 				{
 					Results rs = new Results();
@@ -642,7 +673,7 @@ public class BreakingPointTool
 				{	
 					dbSave.saveTimestamp(projectName, i);
 				}
-				
+
 				for (int i = 0; i < versionsNum; i ++)
 				{
 					String p = projectPath + File.separator + projectName + File.separator + projectName + i;
@@ -689,10 +720,10 @@ public class BreakingPointTool
 
 					projectArtifacts.setVersion(v);
 					dbCall.clearData();
-					
+
 
 				} 
-				
+
 				// Calculate LOC
 				AverageLocCalculationC calcAverageAllLevels = new AverageLocCalculationC();
 				calcAverageAllLevels.calculateLocPackageLevel(projectArtifacts);
@@ -723,14 +754,14 @@ public class BreakingPointTool
 						OptimalArtifactC optimalPackage = new OptimalArtifactC();
 						optimalPackage.calculateOptimalPackage(similarPckC, i); 
 					} 
-					
+
 					dbSave.deleteTimestamp(projectName, i);
 				}
 			}
 
 			else if (typeAnalysis == 2)
 			{
-				
+
 				DatabaseSaveData dbSave = new DatabaseSaveData();
 				dbSave.saveTimestamp(projectName, versionsNum - 1);
 
@@ -766,15 +797,10 @@ public class BreakingPointTool
 
 				for (String pc : dbCall.getPackagesId())
 				{
-					//System.out.println("check before: " + pc);
 					if (pc.contains("test"))
 						continue;
-					if (pc.contains("res"))
-						continue;
-					if (pc.contains("tools"))
-						continue;
-					//String[] tempPackage = pc.split("src/main/java/");
 					String[] tempPackage = pc.split(":");
+
 					if (tempPackage.length == 1)
 						continue;
 					//String[] temp1 = tempPackage[1].split(".java");
@@ -782,6 +808,7 @@ public class BreakingPointTool
 					//System.out.println("check after: " +tempPackage[1]);
 					artifactLongNamesPackage.add(tempPackage[1]); 
 				}
+
 				// Set metrics from sonar at class and package level	
 				AverageLocCalculationC calcAverageAllLevels = new AverageLocCalculationC();
 				calcAverageAllLevels.setMetricsToClassLevel(metricsFromSonarClassLevel, projectName, versionsNum-1, language, p, credentials);
@@ -809,7 +836,7 @@ public class BreakingPointTool
 				// Calculate Optimal Class
 				OptimalArtifactC optimalClass = new OptimalArtifactC();
 				optimalClass.calculateOptimalClass(similarClC, versionsNum-1);
-				
+
 				if (similarPckC.size() == 1)
 				{
 					ResultsC rs = new ResultsC();
@@ -859,9 +886,18 @@ public class BreakingPointTool
 			System.out.println("Programming language does not supported. Execute the software again and choose one of the available options.");
 		}
 
+		SonarDatabaseConnection.closeConnection();
+		DatabaseConnection.closeConnection();
 		deleteFile(versionsNum);
+
+		// Delete directory after used
+		String javaRunningDirectory = System.getProperty("user.dir");
+		String cloneDirectoryPath = javaRunningDirectory + "/Projects/" + projectName;
+		File directory = new File(cloneDirectoryPath);
+		deleteSourceCode(directory);
 	}
 
+	// Function that creates sonar-project.properties file and executes SonarQube
 	public static void sonarQube (String exec, String projectName, int versions, String projectPath, String language, String serverUrl, String username, String password, int typeAnalysis) throws FileNotFoundException, InterruptedException
 	{
 		String fileName = "sonar-project.properties";
@@ -976,169 +1012,258 @@ public class BreakingPointTool
 		System.out.println("Deletion successful."); 
 	}
 
-	// Check if tables are created, if not, create them
-	public static void createDatabaseTables() throws SQLException
+	
+	// Delete source codes cloned from github
+	public static void deleteSourceCode(File file) throws IOException {
+		boolean result = true;
+
+		if (file.isDirectory()) 
+		{
+			// If directory is empty, then delete it
+			if (file.list().length == 0) 
+			{
+				result = file.delete();
+				if (result)
+				{
+					//System.out.println("File is deleted : " + file.getAbsolutePath());
+				}
+				else
+					System.out.println("Error with the deletion of file");
+			} 
+			else 
+			{
+				// List all the directory contents
+				String[] files = file.list();
+
+				for (String temp : files) 
+				{
+					// construct the file structure
+					File fileDelete = new File(file, temp);
+
+					// recursive delete
+					deleteSourceCode(fileDelete);
+				}
+
+				// check the directory again, if empty then delete it
+				if (file.list().length == 0) 
+				{
+					result = file.delete();
+
+					if (result)
+					{
+						//System.out.println("File is deleted : " + file.getAbsolutePath());
+					}
+					else
+						System.out.println("Error with the deletion of file");
+				}
+			}
+
+		} 
+		else 
+		{
+			// if file, then delete it
+			result = file.delete();
+
+			if (result)
+			{
+				//System.out.println("File is deleted : " + file.getAbsolutePath());
+			}
+			else
+				System.out.println("Error with the deletion of file");
+		}
+	}
+
+	// Delete already analysed project from DB
+	public static void DeleteFromDBAlreadyAnalysedProject(String projectName, String language)
 	{
 		Connection conn = DatabaseConnection.getConnection();
-		DatabaseMetaData dbm = (DatabaseMetaData) conn.getMetaData();
-		// check if "employee" table is there
-		ResultSet tables = dbm.getTables(null, null, "principalMetrics", null);
-		if (tables.next()) 
+		PreparedStatement pstm = null;
+		ResultSet resultSet = null;
+		String query;
+		
+		query = "SELECT * FROM principalMetrics WHERE project_name = (?) ";
+		try 
 		{
-			System.out.println("Table principalMetrics exists!");
-		}
-		else 
-		{
-			Statement stmt = null;
-			try {
-				stmt = (Statement) conn.createStatement();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-			String query = "CREATE TABLE `principalMetrics` (\n" + 
-					"  `class_name` varchar(500) NOT NULL,\n" + 
-					"  `project_name` varchar(500) NOT NULL,\n" + 
-					"  `version` int(11) NOT NULL,\n" + 
-					"  `td_minutes` float(100,0) NOT NULL,\n" + 
-					"  `principal` double(100,0) NOT NULL,\n" + 
-					"  `code_smells` int(100) NOT NULL,\n" + 
-					"  `bugs` int(100) NOT NULL,\n" + 
-					"  `vulnerabilities` int(100) NOT NULL,\n" + 
-					"  `duplicated_lines_density` float(100,0) NOT NULL,\n" + 
-					"  `scope` varchar(100) NOT NULL,\n" + 
-					"  `classes` double(100,0) DEFAULT NULL,\n" + 
-					"  `complexity` double(100,0) DEFAULT NULL,\n" + 
-					"  `functions` double DEFAULT NULL,\n" + 
-					"  `nloc` double DEFAULT NULL,\n" + 
-					"  `statements` double DEFAULT NULL,\n" + 
-					"  `comment_lines_density` double(100,0) DEFAULT NULL,\n" + 
-					"  `language` varchar(500) NOT NULL\n" + 
-					") ENGINE=InnoDB DEFAULT CHARSET=latin1;";
+			pstm = conn.prepareStatement(query);
+			pstm.setString(1, projectName);
+			resultSet = pstm.executeQuery();
 
-			stmt.executeUpdate(query);
+			// If there are rows, delete them all
+			if(resultSet.next())
+			{
+				//TODO delete from principal, cMetrics or javaMetrics
+				
+				//Delete Principal Metrics
+				query = "DELETE FROM principalMetrics WHERE project_name = (?) ";
+				try 
+				{
+					//Close previous connect and start new
+					pstm.close();
+					pstm = conn.prepareStatement(query);
+					pstm.setString(1, projectName);
+					int rowCount = pstm.executeUpdate();
 
-			if (stmt != null) {
-				try {
-					stmt.close();
+					System.out.println("Record Deleted successfully from database. Row Count returned is :: "
+							+ rowCount);
+
 				} catch (SQLException e) {
-					e.printStackTrace();
+					System.out
+					.println("An exception occured while deleting data from database. Exception is :: "
+							+ e);
 				}
-			}
-		}
+				
+				String table = "";
+				if (language.equals("Java"))
+				{
+					table = "javaMetrics";
+				}
+				else
+				{
+					table = "cMetrics";
+				}
+				
+				//Delete Interest Metrics
+				query = "DELETE FROM " + table + " WHERE project_name = (?) ";
+				try 
+				{
+					//Close previous connect and start new
+					pstm.close();
+					pstm = conn.prepareStatement(query);
+					pstm.setString(1, projectName);
+					int rowCount = pstm.executeUpdate();
 
-		tables = null;
-		tables = dbm.getTables(null, null, "cMetrics", null);
-		if (tables.next()) 
-		{
-			System.out.println("Table cMetrics exists!");
-		}
-		else 
-		{
-			Statement stmt = null;
-			try {
-				stmt = (Statement) conn.createStatement();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-			String query = "CREATE TABLE `cMetrics` (\n" + 
-					"  `id` int(10) NOT NULL,\n" + 
-					"  `class_name` varchar(500) NOT NULL,\n" + 
-					"  `project_name` varchar(100) NOT NULL,\n" + 
-					"  `scope` varchar(45) NOT NULL,\n" + 
-					"  `loc` double NOT NULL,\n" + 
-					"  `cyclomatic_complexity` double NOT NULL,\n" + 
-					"  `number_of_functions` double NOT NULL,\n" + 
-					"  `comments_density` double NOT NULL,\n" + 
-					"  `version` int(45) NOT NULL,\n" + 
-					"  `principal` double DEFAULT '0',\n" + 
-					"  `interest` double DEFAULT '0',\n" + 
-					"  `breaking_point` double DEFAULT '0',\n" + 
-					"  `frequency_of_change` double DEFAULT '0',\n" + 
-					"  `interest_probability` double DEFAULT '0',\n" + 
-					"  `coupling` double DEFAULT '0',\n" + 
-					"  `cohesion` double DEFAULT '0'\n" + 
-					") ENGINE=InnoDB DEFAULT CHARSET=latin1;";
+					System.out.println("Record Deleted successfully from database. Row Count returned is :: "
+							+ rowCount);
 
-			stmt.executeUpdate(query);
-
-			if (stmt != null) {
-				try {
-					stmt.close();
 				} catch (SQLException e) {
-					e.printStackTrace();
+					System.out
+					.println("An exception occured while deleting data from database. Exception is :: "
+							+ e);
 				}
 			}
 
-		}
-
-		tables = null;
-		tables = dbm.getTables(null, null, "javaMetrics", null);
-		if (tables.next()) 
+		} catch (SQLException ex) {
+			Logger logger = Logger.getAnonymousLogger();
+			logger.log(Level.SEVERE, "Exception was thrown: ", ex);
+			System.out.println("Database select coupling-cohesion request failed."
+					+ "Please try again!");
+		} finally 
 		{
-			System.out.println("Table javaMetrics exists!");
-		}
-		else 
-		{
-			Statement stmt = null;
-			try {
-				stmt = (Statement) conn.createStatement();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-			String query = "CREATE TABLE `javaMetrics` (\n" + 
-					"  `id` int(10) NOT NULL,\n" + 
-					"  `class_name` varchar(100) NOT NULL,\n" + 
-					"  `project_name` varchar(100) NOT NULL,\n" + 
-					"  `scope` varchar(45) DEFAULT NULL,\n" + 
-					"  `wmc` double(40,0) NOT NULL,\n" + 
-					"  `dit` double(40,0) NOT NULL,\n" + 
-					"  `cbo` double(40,0) NOT NULL,\n" + 
-					"  `rfc` double(40,0) NOT NULL,\n" + 
-					"  `lcom` double(40,0) NOT NULL,\n" + 
-					"  `wmc_dec` double(40,0) NOT NULL,\n" + 
-					"  `nocc` double(40,0) NOT NULL,\n" + 
-					"  `mpc` double(40,0) NOT NULL,\n" + 
-					"  `dac` double(40,0) NOT NULL,\n" + 
-					"  `loc` double(40,0) NOT NULL,\n" + 
-					"  `number_of_properties` double(40,0) NOT NULL,\n" + 
-					"  `dsc` double(40,0) NOT NULL,\n" + 
-					"  `noh` double(40,0) NOT NULL,\n" + 
-					"  `ana` double(40,0) NOT NULL,\n" + 
-					"  `dam` double(40,0) NOT NULL,\n" + 
-					"  `dcc` double(40,0) NOT NULL,\n" + 
-					"  `camc` double(40,0) NOT NULL,\n" + 
-					"  `moa` double(40,0) NOT NULL,\n" + 
-					"  `mfa` double(40,0) NOT NULL,\n" + 
-					"  `nop` double(40,0) NOT NULL,\n" + 
-					"  `cis` double(40,0) NOT NULL,\n" + 
-					"  `nom` double(40,0) NOT NULL,\n" + 
-					"  `reusability` double(40,0) NOT NULL,\n" + 
-					"  `flexibility` double(40,0) NOT NULL,\n" + 
-					"  `understandability` double(40,0) NOT NULL,\n" + 
-					"  `functionality` double(40,0) NOT NULL,\n" + 
-					"  `extendibility` double(40,0) NOT NULL,\n" + 
-					"  `effectiveness` double(40,0) NOT NULL,\n" + 
-					"  `fanIn` double(40,0) NOT NULL,\n" + 
-					"  `commit_hash` varchar(100) NOT NULL,\n" + 
-					"  `version` int(100) NOT NULL,\n" + 
-					"  `principal` double DEFAULT '0',\n" + 
-					"  `interest` double DEFAULT '0',\n" + 
-					"  `breakingpoint` double DEFAULT '0',\n" + 
-					"  `frequency_of_change` double DEFAULT '0',\n" + 
-					"  `interest_probability` double DEFAULT '0',\n" + 
-					"  `rem` double DEFAULT '0',\n" + 
-					"  `cpm` double DEFAULT '0'\n" + 
-					") ENGINE=InnoDB DEFAULT CHARSET=utf8;";
-
-			stmt.executeUpdate(query);
-
-			if (stmt != null) {
+			if (resultSet != null) {
 				try {
-					stmt.close();
+					resultSet.close();
 				} catch (SQLException e) {
-					e.printStackTrace();
+					Logger logger = Logger.getAnonymousLogger();
+					logger.log(Level.SEVERE, "Exception was thrown: ", e);
+				}
+			}
+			if (pstm != null) {
+				try {
+					pstm.close();
+				} catch (SQLException e) {
+					Logger logger = Logger.getAnonymousLogger();
+					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
 			}
 		}
 	}
+	
+	//TODO check for phase 2 if this versions is analysed, if it is, deleted first
+	public static void DeleteFromDBAlreadyAnalysedVersion(String projectName, String language, int version)
+	{
+		Connection conn = DatabaseConnection.getConnection();
+		PreparedStatement pstm = null;
+		ResultSet resultSet = null;
+		String query;
+		
+		query = "SELECT * FROM principalMetrics WHERE project_name = (?) and version = (?)";
+		try 
+		{
+			pstm = conn.prepareStatement(query);
+			pstm.setString(1, projectName);
+			pstm.setInt(2, version);
+			resultSet = pstm.executeQuery();
+
+			// If there are rows, delete them all
+			if(resultSet.next())
+			{
+				//TODO delete from principal, cMetrics or javaMetrics
+				
+				//Delete Principal Metrics
+				query = "DELETE FROM principalMetrics WHERE project_name = (?) and version = (?)";
+				try 
+				{
+					//Close previous connect and start new
+					pstm.close();
+					pstm = conn.prepareStatement(query);
+					pstm.setString(1, projectName);
+					pstm.setInt(2, version);
+					int rowCount = pstm.executeUpdate();
+
+					System.out.println("Record Deleted successfully from database. Row Count returned is :: "
+							+ rowCount);
+
+				} catch (SQLException e) {
+					System.out
+					.println("An exception occured while deleting data from database. Exception is :: "
+							+ e);
+				}
+				
+				String table = "";
+				if (language.equals("Java"))
+				{
+					table = "javaMetrics";
+				}
+				else
+				{
+					table = "cMetrics";
+				}
+				
+				//Delete Interest Metrics
+				query = "DELETE FROM " + table + " WHERE project_name = (?) and version = (?)";
+				try 
+				{
+					//Close previous connect and start new
+					pstm.close();
+					pstm = conn.prepareStatement(query);
+					pstm.setString(1, projectName);
+					pstm.setInt(2, version);
+					int rowCount = pstm.executeUpdate();
+
+					System.out.println("Record Deleted successfully from database. Row Count returned is :: "
+							+ rowCount);
+
+				} catch (SQLException e) {
+					System.out
+					.println("An exception occured while deleting data from database. Exception is :: "
+							+ e);
+				}
+			}
+
+		} catch (SQLException ex) {
+			Logger logger = Logger.getAnonymousLogger();
+			logger.log(Level.SEVERE, "Exception was thrown: ", ex);
+			System.out.println("Database select coupling-cohesion request failed."
+					+ "Please try again!");
+		} finally 
+		{
+			if (resultSet != null) {
+				try {
+					resultSet.close();
+				} catch (SQLException e) {
+					Logger logger = Logger.getAnonymousLogger();
+					logger.log(Level.SEVERE, "Exception was thrown: ", e);
+				}
+			}
+			if (pstm != null) {
+				try {
+					pstm.close();
+				} catch (SQLException e) {
+					Logger logger = Logger.getAnonymousLogger();
+					logger.log(Level.SEVERE, "Exception was thrown: ", e);
+				}
+			}
+		}
+	}
+	
 }

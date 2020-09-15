@@ -12,22 +12,29 @@ class DatabaseConnections
 	/*
 	 * Test for classes in package connection
 	 */
-	  @Test
-	  public void testMetricsDBConnection() throws Exception 
-	  {
-		  // Return connection not null
-		 Connection conn = DatabaseConnection.getConnection();
-	     assertNotNull(conn);
 
-	  }
-	  
-	  @Test
-	  public void testSonarDBConnection() throws Exception 
-	  {
-		  // Return connection not null
-		 Connection conn = SonarDatabaseConnection.getConnection();
-	     assertNotNull(conn);
+	@Test
+	public void testMetricsDBConnection() throws Exception 
+	{
+		fileConfiguration f = new fileConfiguration();
+		f.readConfigurationFile();
 
-	  }
+		// Return connection not null
+		Connection conn = DatabaseConnection.getConnection();
+		assertNotNull(conn);
+
+	}
+
+	@Test
+	public void testSonarDBConnection() throws Exception 
+	{
+		fileConfiguration f = new fileConfiguration();
+		f.readConfigurationFile();
+
+		// Return connection not null
+		Connection conn = SonarDatabaseConnection.getConnection();
+		assertNotNull(conn);
+
+	}
 
 }

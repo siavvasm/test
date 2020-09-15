@@ -95,14 +95,14 @@ public class GetAnalysisDataJava
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
 			}
-			if (conn != null) {
+			/*if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
 					Logger logger = Logger.getAnonymousLogger();
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
-			}
+			}*/
 		}
 		
 
@@ -161,14 +161,14 @@ public class GetAnalysisDataJava
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
 			}
-			if (conn != null) {
+			/*if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
 					Logger logger = Logger.getAnonymousLogger();
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
-			}
+			}*/
 		}
 	}
 	
@@ -231,14 +231,14 @@ public class GetAnalysisDataJava
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
 			}
-			if (conn != null) {
+			/*if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
 					Logger logger = Logger.getAnonymousLogger();
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
-			}
+			}*/
 		}
 	}
 
@@ -299,14 +299,14 @@ public class GetAnalysisDataJava
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
 			}
-			if (conn != null) {
+			/*if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
 					Logger logger = Logger.getAnonymousLogger();
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
-			}
+			}*/
 		}
 	}
 	

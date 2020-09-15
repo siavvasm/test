@@ -26,6 +26,7 @@ public class AverageLocCalculation
 		HashMap<String, ArrayList<Double>> ChangeProneness = new HashMap<String, ArrayList<Double>>();
 		
 		ChangeProneness = ChangeProneness("rem_and_cpm_metrics_classLevel.csv");
+		System.out.println("Current path to read file: **********" + System.getProperty("user.dir"));
 		// read specific version file
 		br = new BufferedReader(new FileReader("output" + versionNum + ".csv"));	
 		//System.out.println("Version: " + i);

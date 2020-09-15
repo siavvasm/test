@@ -42,14 +42,14 @@ public class DatabaseSaveDataC
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
 			}
-			if (conn != null) {
+			/*if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
 					Logger logger = Logger.getAnonymousLogger();
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
-			}
+			}*/
 		}
 	}
 
@@ -89,14 +89,14 @@ public class DatabaseSaveDataC
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
 			}
-			if (conn != null) {
+			/*if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
 					Logger logger = Logger.getAnonymousLogger();
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
-			}
+			}*/
 		}
 
 	}
@@ -109,8 +109,8 @@ public class DatabaseSaveDataC
 		Connection conn = DatabaseConnection.getConnection();
 		PreparedStatement pstm = null;
 
-		String query = "INSERT INTO principalMetrics (class_name, project_name, scope, version, td_minutes, principal, code_smells, bugs," + 
-				"vulnerabilities, duplicated_lines_density, classes, complexity, functions, nloc, statements, comment_lines_density, language) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE class_name=VALUES(class_name)";
+		String query = "INSERT INTO principalMetrics (class_name, project_name, scope, version, td_minutes, principal, code_smells, bugs,vulnerabilities, duplicated_lines_density, classes, complexity, functions, nloc, statements, comment_lines_density, language) "
+				+ "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE class_name=VALUES(class_name)";
 		try 
 		{
 			pstm = conn.prepareStatement(query);
@@ -120,9 +120,9 @@ public class DatabaseSaveDataC
 			pstm.setDouble(4, version);
 			pstm.setDouble(5, td);
 			pstm.setDouble(6, principal);
-			pstm.setDouble(7, codeSmells);
-			pstm.setDouble(8, bugs);
-			pstm.setDouble(9, vulnerabilities);
+			pstm.setInt(7, (int) codeSmells);
+			pstm.setInt(8, (int) bugs);
+			pstm.setInt(9, (int) vulnerabilities);
 			pstm.setDouble(10, duplications);
 			pstm.setDouble(11, classes);
 			pstm.setDouble(12, complexity);
@@ -147,14 +147,14 @@ public class DatabaseSaveDataC
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
 			}
-			if (conn != null) {
+			/*if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
 					Logger logger = Logger.getAnonymousLogger();
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
-			}
+			}*/
 		}
 
 	}
@@ -187,14 +187,14 @@ public class DatabaseSaveDataC
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
 			}
-			if (conn != null) {
+			/*if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
 					Logger logger = Logger.getAnonymousLogger();
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
-			}
+			}*/
 		}
 	}
 }

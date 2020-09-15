@@ -3,10 +3,6 @@ package main.java.breakingPointTool.calculations;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-import main.java.breakingPointTool.artifact.PackageMetricsC;
-import main.java.breakingPointTool.artifact.ProjectArtifact;
-import main.java.breakingPointTool.database.DatabaseSaveDataC;
-
 public class OptimalArtifactC 
 {
 	private double optimalComplexity;

@@ -43,7 +43,7 @@ public class MetricsCalculator
 		int exitval;
 		System.out.println("----- Start Metrics Calculator -----");
 		
-		// Jar file if you execute this tool as jar file
+		// Jar file if you execute this tool as jar file, eclipse and server
 		File f = new File(path + File.separator + projectName + File.separator + jarName + version + ".jar");
 		
 		// Run On Docker in Server Command
@@ -60,7 +60,7 @@ public class MetricsCalculator
 			// Run On Docker in Server Command
 			//String execution = "java -jar metrics_calculator.jar " + path + File.separator + projectName + File.separator + jarName + version + ".jar" + " output" + version + ".csv";
 			// if you execute from eclipse
-			String execution = "java -jar externalTools/metrics_calculator.jar " + System.getProperty("user.dir") + "/jars/" +jarName + version + ".jar" + " output" + version + ".csv";
+			String execution = "java -jar externalTools/metrics_calculator.jar " + path + File.separator + projectName + File.separator + jarName + version + ".jar" + " output" + version + ".csv";
 			System.out.println(execution);
 			//Process metricsAnalysisProcess = Runtime.getRuntime()
 					//.exec("java -jar externalTools/metrics_calculator.jar " + System.getProperty("user.dir") + "/jars/" +jarName + version + ".jar" + " output" + version + ".csv");

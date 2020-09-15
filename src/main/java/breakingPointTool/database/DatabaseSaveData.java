@@ -21,7 +21,7 @@ public class DatabaseSaveData
 		PreparedStatement pstm = null;
 
 		String query = "INSERT INTO javaMetrics (class_name,project_name,scope,wmc,dit,cbo,rfc,lcom,wmc_dec,nocc,mpc,dac,loc,number_of_properties,dsc,noh,ana,dam,dcc,camc,moa,mfa,nop,cis,nom," + 
-				"reusability,flexibility,understandability,functionality,extendibility,effectiveness,fanIn,commit_hash,version,rem,cpm) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE class_name=VALUES(class_name)";
+				"reusability,flexibility,understandability,functionality,extendibility,effectiveness,fanIn,commit_hash,version,rem,cpm) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE class_name=VALUES(class_name)";
 		try 
 		{
 			pstm = conn.prepareStatement(query);
@@ -53,10 +53,14 @@ public class DatabaseSaveData
 			pstm.setDouble(26, Reusability);
 			pstm.setDouble(27, Flexibility);
 			pstm.setDouble(28, Understandability);
-			pstm.setDouble(29, Functionality);
-			pstm.setString(30, String.valueOf(versionNum));
-			pstm.setDouble(31, rem);
-			pstm.setDouble(32, cpm);
+			pstm.setDouble(29, Functionality);		
+			pstm.setDouble(30, Extendibility);
+			pstm.setDouble(31, Effectiveness);
+			pstm.setDouble(32, FanIn);
+			pstm.setString(33, "empty");
+			pstm.setString(34, String.valueOf(versionNum));
+			pstm.setDouble(35, rem);
+			pstm.setDouble(36, cpm);
 			pstm.executeUpdate();
 
 		} catch (SQLException ex) {
@@ -73,14 +77,14 @@ public class DatabaseSaveData
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
 			}
-			if (conn != null) {
+			/*if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
 					Logger logger = Logger.getAnonymousLogger();
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
-			}
+			}*/
 		}	
 	}
 
@@ -116,14 +120,14 @@ public class DatabaseSaveData
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
 			}
-			if (conn != null) {
+			/*if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
 					Logger logger = Logger.getAnonymousLogger();
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
-			}
+			}*/
 		}
 	}	
 
@@ -147,9 +151,9 @@ public class DatabaseSaveData
 			pstm.setDouble(4, version);
 			pstm.setDouble(5, td);
 			pstm.setDouble(6, principal);
-			pstm.setDouble(7, codeSmells);
-			pstm.setDouble(8, bugs);
-			pstm.setDouble(9, vulnerabilities);
+			pstm.setInt(7, (int) codeSmells);
+			pstm.setInt(8, (int) bugs);
+			pstm.setInt(9, (int) vulnerabilities);
 			pstm.setDouble(10, duplications);
 			pstm.setDouble(11, classes);
 			pstm.setDouble(12, complexity);
@@ -174,14 +178,14 @@ public class DatabaseSaveData
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
 			}
-			if (conn != null) {
+			/*if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
 					Logger logger = Logger.getAnonymousLogger();
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
-			}
+			}*/
 		}
 	}
 
@@ -213,14 +217,14 @@ public class DatabaseSaveData
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
 			}
-			if (conn != null) {
+			/*if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
 					Logger logger = Logger.getAnonymousLogger();
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
-			}
+			}*/
 		}
 	}
 
@@ -252,14 +256,14 @@ public class DatabaseSaveData
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
 			}
-			if (conn != null) {
+			/*if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
 					Logger logger = Logger.getAnonymousLogger();
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
-			}
+			}*/
 		}
 	}
 
@@ -291,14 +295,14 @@ public class DatabaseSaveData
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
 			}
-			if (conn != null) {
+			/*if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
 					Logger logger = Logger.getAnonymousLogger();
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
-			}
+			}*/
 		}
 	}
 }
