@@ -101,7 +101,6 @@ public class ClassMetrics
 		this.NOM = NOM;
 		this.SIZE1 = SIZE1;
 		this.SIZE2 = SIZE2;
-		
 	}
 	
 	public void setInterestProbability(double ip)

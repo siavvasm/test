@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import main.java.breakingPointTool.connection.DatabaseConnection;
+import main.java.breakingPointTool.connection.SonarDatabaseConnection;
 
 public class DatabaseGetData 
 {
@@ -25,6 +26,7 @@ public class DatabaseGetData
 		this.packagesIDs = new ArrayList<String>();
 		this.projectsIDs = new ArrayList<String>();
 		this.projectsNames = new ArrayList<String>();
+		getKeeForProject(projectName);
 	}
 
 	public DatabaseGetData()
@@ -36,11 +38,16 @@ public class DatabaseGetData
 		this.projectsNames = new ArrayList<String>();
 	}
 
+	public void DatabaseForPackages(String projectName) throws InstantiationException, IllegalAccessException 
+	{
+		getDirectoriesForProject(projectName, kee);	
+	}
+
 	public void DatabaseForProjects() throws InstantiationException, IllegalAccessException
 	{
 		projectsNames = new ArrayList<String>();
 		projectsIDs = new ArrayList<String>();
-		//getAllProjects();
+		getAllProjects();
 	}
 
 	public ArrayList<Double> getCouplingCohesion(String fileName, int version)
@@ -88,19 +95,19 @@ public class DatabaseGetData
 				}
 			}
 
-			/*if (conn != null) {
+			if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
 					Logger logger = Logger.getAnonymousLogger();
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
-			}*/
+			}
 		}
 		return cc;
 	}
 
-	/*
+
 	public void getKeeForProject(String projectName) throws InstantiationException, IllegalAccessException
 	{
 		Connection conn = SonarDatabaseConnection.getConnection();
@@ -139,11 +146,17 @@ public class DatabaseGetData
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
 			}
-			
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					Logger logger = Logger.getAnonymousLogger();
+					logger.log(Level.SEVERE, "Exception was thrown: ", e);
+				}
+			}
 		}
 		System.out.println("Kee from project " + projectName+ " retrieved from database successfully!");
 	}
-
 
 	public void getClassesForProject(String projectName, String kee) throws InstantiationException, IllegalAccessException
 	{
@@ -185,7 +198,13 @@ public class DatabaseGetData
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
 			}
-
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					Logger logger = Logger.getAnonymousLogger();
+					logger.log(Level.SEVERE, "Exception was thrown: ", e);				}
+			}
 		}
 		System.out.println("Classes from project " + projectName + " retrieved from database successfully!");		
 	}
@@ -230,12 +249,18 @@ public class DatabaseGetData
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
 			}
-
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					Logger logger = Logger.getAnonymousLogger();
+					logger.log(Level.SEVERE, "Exception was thrown: ", e);
+				}
+			}
 		}
 		System.out.println("Directories from project " + projectName + " retrieved from database successfully!");	
 	}
-	*/
-/*
+
 	public void  getAllProjects() throws InstantiationException, IllegalAccessException
 	{
 		ArrayList<String> keeDirectoryID = new ArrayList<>();
@@ -278,14 +303,19 @@ public class DatabaseGetData
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
 			}
-
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					Logger logger = Logger.getAnonymousLogger();
+					logger.log(Level.SEVERE, "Exception was thrown: ", e);
+				}
+			}
 		}
 		System.out.println("Projects retrieved from database successfully!");
 		processingForProjectsAndVersions(keeDirectoryID);	
 	}
-	*/
-	
-	/*
+
 	public void processingForProjectsAndVersions(ArrayList<String> kees)
 	{
 		int i = 1;
@@ -308,8 +338,7 @@ public class DatabaseGetData
 		}
 
 	}
-	*/
-/*
+
 	public ArrayList<String> getUniqueNames()
 	{
 		// Store unique items in result.
@@ -325,7 +354,6 @@ public class DatabaseGetData
 		}
 		return result;
 	}
-	*/
 
 	public ArrayList<Double> getKForArtifact(String className)
 	{
@@ -368,14 +396,14 @@ public class DatabaseGetData
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
 			}
-			/*if (conn != null) {
+			if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
 					Logger logger = Logger.getAnonymousLogger();
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
-			}*/
+			}
 		}
 		return k;
 	}
@@ -422,14 +450,14 @@ public class DatabaseGetData
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
 			}
-			/*if (conn != null) {
+			if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
 					Logger logger = Logger.getAnonymousLogger();
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
-			}*/
+			}
 		}
 		return loc;
 	}
@@ -476,14 +504,14 @@ public class DatabaseGetData
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
 			}
-			/*if (conn != null) {
+			if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
 					Logger logger = Logger.getAnonymousLogger();
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
-			}*/
+			}
 		}
 		return loc;
 	}
@@ -529,14 +557,14 @@ public class DatabaseGetData
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
 			}
-			/*if (conn != null) {
+			if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
 					Logger logger = Logger.getAnonymousLogger();
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
-			}*/
+			}
 		}
 		return k;
 	}
@@ -583,14 +611,14 @@ public class DatabaseGetData
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
 			}
-			/*if (conn != null) {
+			if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
 					Logger logger = Logger.getAnonymousLogger();
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
-			}*/
+			}
 		}
 		return interest;
 	}
@@ -637,14 +665,14 @@ public class DatabaseGetData
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
 			}
-			/*if (conn != null) {
+			if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
 					Logger logger = Logger.getAnonymousLogger();
 					logger.log(Level.SEVERE, "Exception was thrown: ", e);
 				}
-			}*/
+			}
 		}
 		return interest;
 	}

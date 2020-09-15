@@ -84,9 +84,9 @@ public class Results
     	double rate = calculateInterestProbability(investigatedClass.getClassName(), version);
     	System.out.println("Interest probability: " + rate);
     	DatabaseSaveData saveDataInDatabase = new DatabaseSaveData();
-    	saveDataInDatabase.saveBreakingPointInDatabase(investigatedClass.getClassName(), version, this.breakingPoint, this.principal, this.interest, k, rate, investigatedClass.getProjectName());
+    	saveDataInDatabase.saveBreakingPointInDatabase(investigatedClass.getClassName(), version, this.breakingPoint, this.principal, this.interest, k, rate);
 
-    	saveDataInDatabase.updatePrincipal(investigatedClass.getClassName(), version, this.principal, investigatedClass.getProjectName());
+    	saveDataInDatabase.updatePrincipal(investigatedClass.getClassName(), version, this.principal);
     }
     
     public void calculateInterestPackage(PackageMetrics investigatedPackage, OptimalArtifact optimalClass, int version) throws SQLException
@@ -133,10 +133,9 @@ public class Results
     	double rate = calculateInterestProbability(investigatedPackage.getPackageName(), version);
     	System.out.println("Interest probability: " + rate);
     	DatabaseSaveData saveDataInDatabase = new DatabaseSaveData();
-    	saveDataInDatabase.saveBreakingPointInDatabase(investigatedPackage.getPackageName(), version, this.breakingPoint, this.principal, this.interest, k, rate, investigatedPackage.getProjectName()
-);
+    	saveDataInDatabase.saveBreakingPointInDatabase(investigatedPackage.getPackageName(), version, this.breakingPoint, this.principal, this.interest, k, rate);
     	
-    	saveDataInDatabase.updatePrincipal(investigatedPackage.getPackageName(), version, this.principal, investigatedPackage.getProjectName());
+    	saveDataInDatabase.updatePrincipal(investigatedPackage.getPackageName(), version, this.principal);
 
     }
     
@@ -215,8 +214,8 @@ public class Results
 		DatabaseSaveData saveDataInDatabase = new DatabaseSaveData();
 		System.out.println("Before saved in database: " + investigatedPackage.getPackageName() + " " + version + " " +
 				this.breakingPoint + " " + this.principal + " " + this.interest + " " + k + " " + rate);
-		saveDataInDatabase.saveBreakingPointInDatabase(investigatedPackage.getPackageName(), version, this.breakingPoint, this.principal, this.interest, k, rate, investigatedPackage.getProjectName());
-		saveDataInDatabase.updatePrincipal(investigatedPackage.getPackageName(), version, this.principal, investigatedPackage.getProjectName());
+		saveDataInDatabase.saveBreakingPointInDatabase(investigatedPackage.getPackageName(), version, this.breakingPoint, this.principal, this.interest, k, rate);
+		saveDataInDatabase.updatePrincipal(investigatedPackage.getPackageName(), version, this.principal);
 		
 		
 	}

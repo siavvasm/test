@@ -121,7 +121,6 @@ public class PackageMetricsC
 	public void calculateMetricsPackageLevel(int version) throws NumberFormatException, SQLException, IOException
 	{
 		int num = this.filesInPackage.size();
-		System.out.println("Files in package: " + num);
 		double lines_of_codeTemp = 0, complexityTemp = 0, functionsTemp = 0;
 		double comment_lines_density = 0;
 		double couplingTemp = 0, cohesionTemp = 0;
@@ -155,8 +154,8 @@ public class PackageMetricsC
 
 		//DatabaseSaveData saveInDataBase = new DatabaseSaveData(); 
 		/*System.out.println("Project name: " + projectName + " version: "  + version + " packageName: " + this.getPackageName() + " scope: " +  scope
-				+ " lines_of_code: " +  this.nloc + " cyclomatic_complexity: " + this.complexity + " weighted_methods_per_class_unity: " +  this.functions + 
-				" commends density: " +  this.comment_lines_density);	 */
+				+ " lines_of_code: " +  this.nloc + " McCabes_cyclomatic_complexity: " + this.complexity + " weighted_methods_per_class_unity: " +  this.functions + 
+				" commends density: " +  this.comment_lines_density);	*/	
 		
 		if (Double.isNaN(this.McCabes_cyclomatic_complexity)) 
 		{

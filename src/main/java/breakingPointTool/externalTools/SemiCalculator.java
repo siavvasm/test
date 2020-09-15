@@ -5,15 +5,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import main.java.breakingPointTool.main.BreakingPointTool;
 
 public class SemiCalculator 
 {
 	private final String semi = "externalTools/metrics_calculator_noOop.jar";
-	//private final String semi = BreakingPointTool.BASE_DIR + "/metrics_calculator_noOop.jar";
+	//private final String semi = "metrics_calculator_noOop.jar";
+
 
 	public void executeSemiCalculator(String language, int version, String path, String projectName, String credentials) throws IOException, InterruptedException
 	{
@@ -41,12 +38,21 @@ public class SemiCalculator
 		
 		// Jar file if you execute this tool from eclipse
 		File f = new File(path);
-		path = path.replace("//", "/");
 		System.out.println("Execution: " + "java -jar " + semi + " " + language + " " + projectName + " " + version + 
 					" " + path + " " + credentials);
 		
 		if(f.exists()) 
 		{ 
+			// Run On Docker in Server Command
+			//String execution = "java -jar " + semi + " " + language + " " + projectName + " " + version + 
+					//" " + path + " " + credentials;
+
+			// if you execute from eclipse
+			//String execution = "java -jar externalTools/metrics_calculator.jar " + System.getProperty("user.dir") + "/jars/" +jarName + version + ".jar" + " output" + version + ".csv";
+			//System.out.println(execution);
+			//Process metricsAnalysisProcess = Runtime.getRuntime()
+					//.exec("java -jar externalTools/metrics_calculator.jar " + System.getProperty("user.dir") + "/jars/" +jarName + version + ".jar" + " output" + version + ".csv");
+			
 			ArrayList<String> command = new ArrayList<String>();
 			command.add("java");
 			command.add("-jar");
@@ -81,11 +87,9 @@ public class SemiCalculator
 				}
 
 			} catch (IOException e) {
-				Logger logger = Logger.getAnonymousLogger();
-				logger.log(Level.SEVERE, "Exception was thrown: ", e);
+				e.printStackTrace();
 			} catch (InterruptedException e) {
-				Logger logger = Logger.getAnonymousLogger();
-				logger.log(Level.SEVERE, "Exception was thrown: ", e);
+				e.printStackTrace();
 			}
 		}
 		else

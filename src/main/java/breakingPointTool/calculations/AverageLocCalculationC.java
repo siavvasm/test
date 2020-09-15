@@ -5,7 +5,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import main.java.breakingPointTool.api.SonarQubeMetrics;
+import main.java.breakingPointTool.api.ApiCall;
 import main.java.breakingPointTool.artifact.FileMetricsC;
 import main.java.breakingPointTool.artifact.PackageMetricsC;
 import main.java.breakingPointTool.artifact.ProjectArtifact;
@@ -18,7 +18,7 @@ public class AverageLocCalculationC
 	private ArrayList<FileMetricsC> fileMetrics = new ArrayList<FileMetricsC>();
 	private ArrayList<PackageMetricsC> packageMetrics = new ArrayList<PackageMetricsC>();
 	
-	public void setMetricsToClassLevel(SonarQubeMetrics object, String projectName, int versionNum, String language, String path, String credentials) throws NumberFormatException, IOException, SQLException, InterruptedException
+	public void setMetricsToClassLevel(ApiCall object, String projectName, int versionNum, String language, String path, String credentials) throws NumberFormatException, IOException, SQLException, InterruptedException
 	{
 		for (int i = 0; i < object.getArtifactNames().size(); i ++)
 		{
@@ -38,9 +38,9 @@ public class AverageLocCalculationC
 			String scope = "FIL";
 			double principal = 0;
 
-			/*System.out.println("--------------- Class name: " + className + " classes: " + classes + " lines of code: " + lines_of_code +
+			/*System.out.println("Class name: " + className + " classes: " + classes + " lines of code: " + lines_of_code +
 					" complexity: " + complexity + " functions: " + functions + " statements + " + statements + 
-					" TD: " + TD + " comments density: " + comment_lines_density + " code smells: " + codeSmells);*/
+					" TD: " + TD + " comments density: " + comment_lines_density)*/
 
 			DatabaseSaveDataC saveInDataBase = new DatabaseSaveDataC();
 			saveInDataBase.saveMetricsInDatabase(projectName, versionNum, className, scope, lines_of_code, 
@@ -60,7 +60,7 @@ public class AverageLocCalculationC
 		semi.executeSemiCalculator(language, versionNum, path, projectName, credentials);
 	}
 	
-	public void setClassToPackageLevel(ArrayList<String> longNamePackage, String projName, int version, SonarQubeMetrics apiCall, String language) throws NumberFormatException, SQLException, IOException
+	public void setClassToPackageLevel(ArrayList<String> longNamePackage, String projName, int version, ApiCall apiCall, String language) throws NumberFormatException, SQLException, IOException
 	{	
 		this.packageMetrics = new ArrayList<PackageMetricsC>();
 		
@@ -105,12 +105,10 @@ public class AverageLocCalculationC
 		for (int i = 0; i < this.packageMetrics.size(); i++)
 		{
 			String packName = this.packageMetrics.get(i).getPackageName();
-			
 			for (int j = 0; j < this.fileMetrics.size(); j++)
 			{
 				int index = this.fileMetrics.get(j).getClassName().lastIndexOf("/");
-				String packNameOfClass = this.fileMetrics.get(j).getClassName().substring(0,index);	
-				
+				String packNameOfClass = this.fileMetrics.get(j).getClassName().substring(0,index);				
 				if (packName.equals(packNameOfClass))
 				{
 					this.fileMetrics.get(j).metricsfromMetricsCalculator(this.fileMetrics.get(j).getClassName(), version);

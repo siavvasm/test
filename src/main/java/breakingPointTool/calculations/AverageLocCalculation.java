@@ -26,7 +26,6 @@ public class AverageLocCalculation
 		HashMap<String, ArrayList<Double>> ChangeProneness = new HashMap<String, ArrayList<Double>>();
 		
 		ChangeProneness = ChangeProneness("rem_and_cpm_metrics_classLevel.csv");
-		System.out.println("Current path to read file: **********" + System.getProperty("user.dir"));
 		// read specific version file
 		br = new BufferedReader(new FileReader("output" + versionNum + ".csv"));	
 		//System.out.println("Version: " + i);
@@ -91,7 +90,6 @@ public class AverageLocCalculation
 					cm.metricsfromMetricsCalculator(mpc, wmc, dit, nocc, rfc, lcom, wmc_dec, dac, size1, size2);
 					cm.metricsfromChangeProneness(list.get(0), list.get(1));
 					classMetrics.add(cm);
-					
 				}
 
 			}
@@ -178,18 +176,14 @@ public class AverageLocCalculation
 
 			for (int i = 0; i < p.getVersions().size(); i++)
 			{
-				System.out.println("Version: " +  i);
-				System.out.println("Class current: " + currentClass);
-
+				//System.out.println("Version: " +  i);
 				int flag = 0;
 				int packId = 0;
 				int classId = 0;
 				for (int j = 0; j < p.getVersions().get(i).getPackages().size(); j++)
-				{	
-					System.out.println("Classes: "+ p.getVersions().get(i).getPackages().get(j).getPackageName());
-
+				{				
 					for (int z = 0; z < p.getVersions().get(i).getPackages().get(j).getClassInProject().size(); z++)
-					{		
+					{					
 						if (currentClass.equals(p.getVersions().get(i).getPackages().get(j).getClassInProject().get(z).getClassName())) 
 						{
 							sizes.add(p.getVersions().get(i).getPackages().get(j).getClassInProject().get(z).getSize1());
@@ -203,9 +197,7 @@ public class AverageLocCalculation
 						packId = j;
 						break;		
 					}
-
 				}
-				System.out.println("Flag: " + flag);
 				double x = 0;
 				int aboveZero = 0;
 
@@ -328,7 +320,6 @@ public class AverageLocCalculation
 					// apo equals egine contains
 					if (packName.contains(packNameOfClass))
 					{
-					
 						int first = packName.indexOf(packNameOfClass);
 						int len = packNameOfClass.length();
 						
@@ -337,7 +328,9 @@ public class AverageLocCalculation
 						
 						this.packageMetrics.get(i).setClassInPackage(this.classMetrics.get(j));
 						this.packageMetrics.get(i).setPackageName(packNameOfClass);
-					
+						//System.out.println("Package class: " + packNameOfClass);
+						//System.out.println("package: " + packName);
+						//System.out.println("New package name: " + this.packageMetrics.get(i).getPackageName());
 						
 						ArrayList<Double> list = new ArrayList<Double>();
 						//list = ChangePronenessPackage.get(packName);
@@ -353,7 +346,6 @@ public class AverageLocCalculation
 						}
 						
 						this.packageMetrics.get(i).metricsfromChangeProneness(list.get(0), list.get(1));
-						//this.packageMetrics.get(i).print();
 						
 					}
 				}
